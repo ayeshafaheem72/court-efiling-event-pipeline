@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="to_be_defs" targetNamespace="https://github.com/ayeshafaheem72/court-efiling-event-pipeline">
+  <bpmn:collaboration id="to_be_collab">
+    <bpmn:participant id="to_be_pool" name="To-be: online filing with event-driven follow-up" processRef="to_be_process"/>
+  </bpmn:collaboration>
+  <bpmn:process id="to_be_process" isExecutable="false">
+    <bpmn:laneSet id="to_be_lanes">
+      <bpmn:lane id="to_be_lane0" name="Filer (citizen or lawyer)">
+        <bpmn:flowNodeRef>to_be_s</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>to_be_t1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>to_be_e</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="to_be_lane1" name="E-filing API (synchronous)">
+        <bpmn:flowNodeRef>to_be_t2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>to_be_g1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>to_be_t3</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="to_be_lane2" name="Message queue (Redis Streams)">
+        <bpmn:flowNodeRef>to_be_m1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>to_be_m2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>to_be_m3</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>to_be_m4</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="to_be_lane3" name="Workers (asynchronous)">
+        <bpmn:flowNodeRef>to_be_t4</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>to_be_t5</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>to_be_t6</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>to_be_t8</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="to_be_lane4" name="Registrar">
+        <bpmn:flowNodeRef>to_be_t7</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>to_be_e2</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="to_be_s" name="Needs to file a case">
+      <bpmn:outgoing>to_be_f0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="to_be_t1" name="Submit filing online">
+      <bpmn:incoming>to_be_f0</bpmn:incoming>
+      <bpmn:incoming>to_be_f3</bpmn:incoming>
+      <bpmn:outgoing>to_be_f1</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="to_be_t2" name="Validate fields and documents">
+      <bpmn:incoming>to_be_f1</bpmn:incoming>
+      <bpmn:outgoing>to_be_f2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="to_be_g1" name="Valid?">
+      <bpmn:incoming>to_be_f2</bpmn:incoming>
+      <bpmn:outgoing>to_be_f3</bpmn:outgoing>
+      <bpmn:outgoing>to_be_f4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="to_be_t3" name="Save case in MongoDB, return case number">
+      <bpmn:incoming>to_be_f4</bpmn:incoming>
+      <bpmn:outgoing>to_be_f5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:intermediateThrowEvent id="to_be_m1" name="case.filed">
+      <bpmn:incoming>to_be_f5</bpmn:incoming>
+      <bpmn:outgoing>to_be_f6</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="to_be_m1_msg"/>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:task id="to_be_t4" name="Triage: category and priority">
+      <bpmn:incoming>to_be_f6</bpmn:incoming>
+      <bpmn:outgoing>to_be_f7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:intermediateThrowEvent id="to_be_m2" name="case.triaged">
+      <bpmn:incoming>to_be_f7</bpmn:incoming>
+      <bpmn:outgoing>to_be_f8</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="to_be_m2_msg"/>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:task id="to_be_t5" name="Assess filing fee">
+      <bpmn:incoming>to_be_f8</bpmn:incoming>
+      <bpmn:outgoing>to_be_f9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:intermediateThrowEvent id="to_be_m3" name="case.fee_assessed">
+      <bpmn:incoming>to_be_f9</bpmn:incoming>
+      <bpmn:outgoing>to_be_f10</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="to_be_m3_msg"/>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:task id="to_be_t6" name="Assign registrar queue">
+      <bpmn:incoming>to_be_f10</bpmn:incoming>
+      <bpmn:outgoing>to_be_f11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:intermediateThrowEvent id="to_be_m4" name="case.assigned">
+      <bpmn:incoming>to_be_f11</bpmn:incoming>
+      <bpmn:outgoing>to_be_f12</bpmn:outgoing>
+      <bpmn:outgoing>to_be_f14</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="to_be_m4_msg"/>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:task id="to_be_t7" name="Work queue, urgent cases first">
+      <bpmn:incoming>to_be_f12</bpmn:incoming>
+      <bpmn:outgoing>to_be_f13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="to_be_e2" name="Case with registry">
+      <bpmn:incoming>to_be_f13</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="to_be_t8" name="Notify filer">
+      <bpmn:incoming>to_be_f14</bpmn:incoming>
+      <bpmn:outgoing>to_be_f15</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="to_be_e" name="Filer has number, fee and status">
+      <bpmn:incoming>to_be_f15</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="to_be_f0" sourceRef="to_be_s" targetRef="to_be_t1"/>
+    <bpmn:sequenceFlow id="to_be_f1" name="POST /v1/cases" sourceRef="to_be_t1" targetRef="to_be_t2"/>
+    <bpmn:sequenceFlow id="to_be_f2" sourceRef="to_be_t2" targetRef="to_be_g1"/>
+    <bpmn:sequenceFlow id="to_be_f3" name="No: 422 with field errors" sourceRef="to_be_g1" targetRef="to_be_t1"/>
+    <bpmn:sequenceFlow id="to_be_f4" name="Yes" sourceRef="to_be_g1" targetRef="to_be_t3"/>
+    <bpmn:sequenceFlow id="to_be_f5" name="publish" sourceRef="to_be_t3" targetRef="to_be_m1"/>
+    <bpmn:sequenceFlow id="to_be_f6" sourceRef="to_be_m1" targetRef="to_be_t4"/>
+    <bpmn:sequenceFlow id="to_be_f7" sourceRef="to_be_t4" targetRef="to_be_m2"/>
+    <bpmn:sequenceFlow id="to_be_f8" sourceRef="to_be_m2" targetRef="to_be_t5"/>
+    <bpmn:sequenceFlow id="to_be_f9" sourceRef="to_be_t5" targetRef="to_be_m3"/>
+    <bpmn:sequenceFlow id="to_be_f10" sourceRef="to_be_m3" targetRef="to_be_t6"/>
+    <bpmn:sequenceFlow id="to_be_f11" sourceRef="to_be_t6" targetRef="to_be_m4"/>
+    <bpmn:sequenceFlow id="to_be_f12" sourceRef="to_be_m4" targetRef="to_be_t7"/>
+    <bpmn:sequenceFlow id="to_be_f13" sourceRef="to_be_t7" targetRef="to_be_e2"/>
+    <bpmn:sequenceFlow id="to_be_f14" sourceRef="to_be_m4" targetRef="to_be_t8"/>
+    <bpmn:sequenceFlow id="to_be_f15" name="email" sourceRef="to_be_t8" targetRef="to_be_e"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="to_be_diagram">
+    <bpmndi:BPMNPlane id="to_be_plane" bpmnElement="to_be_collab">
+      <bpmndi:BPMNShape id="to_be_pool_di" bpmnElement="to_be_pool" isHorizontal="true"><dc:Bounds x="0" y="0" width="2240" height="600"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_lane0_di" bpmnElement="to_be_lane0" isHorizontal="true"><dc:Bounds x="30" y="0" width="2210" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_lane1_di" bpmnElement="to_be_lane1" isHorizontal="true"><dc:Bounds x="30" y="120" width="2210" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_lane2_di" bpmnElement="to_be_lane2" isHorizontal="true"><dc:Bounds x="30" y="240" width="2210" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_lane3_di" bpmnElement="to_be_lane3" isHorizontal="true"><dc:Bounds x="30" y="360" width="2210" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_lane4_di" bpmnElement="to_be_lane4" isHorizontal="true"><dc:Bounds x="30" y="480" width="2210" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_s_di" bpmnElement="to_be_s"><dc:Bounds x="177" y="42" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_t1_di" bpmnElement="to_be_t1"><dc:Bounds x="283" y="28" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_t2_di" bpmnElement="to_be_t2"><dc:Bounds x="433" y="148" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_g1_di" bpmnElement="to_be_g1" isMarkerVisible="true"><dc:Bounds x="619" y="154" width="52" height="52"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_t3_di" bpmnElement="to_be_t3"><dc:Bounds x="733" y="148" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_m1_di" bpmnElement="to_be_m1"><dc:Bounds x="927" y="282" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_t4_di" bpmnElement="to_be_t4"><dc:Bounds x="1033" y="388" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_m2_di" bpmnElement="to_be_m2"><dc:Bounds x="1227" y="282" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_t5_di" bpmnElement="to_be_t5"><dc:Bounds x="1333" y="388" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_m3_di" bpmnElement="to_be_m3"><dc:Bounds x="1527" y="282" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_t6_di" bpmnElement="to_be_t6"><dc:Bounds x="1633" y="388" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_m4_di" bpmnElement="to_be_m4"><dc:Bounds x="1827" y="282" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_t7_di" bpmnElement="to_be_t7"><dc:Bounds x="1933" y="508" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_e2_di" bpmnElement="to_be_e2"><dc:Bounds x="2127" y="522" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_t8_di" bpmnElement="to_be_t8"><dc:Bounds x="1933" y="388" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="to_be_e_di" bpmnElement="to_be_e"><dc:Bounds x="2127" y="42" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="to_be_f0_di" bpmnElement="to_be_f0"><di:waypoint x="213" y="60"/><di:waypoint x="283" y="60"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f1_di" bpmnElement="to_be_f1"><di:waypoint x="407" y="60"/><di:waypoint x="420" y="60"/><di:waypoint x="420" y="180"/><di:waypoint x="433" y="180"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f2_di" bpmnElement="to_be_f2"><di:waypoint x="557" y="180"/><di:waypoint x="619" y="180"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f3_di" bpmnElement="to_be_f3"><di:waypoint x="645" y="206"/><di:waypoint x="645" y="230"/><di:waypoint x="345" y="230"/><di:waypoint x="345" y="92"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f4_di" bpmnElement="to_be_f4"><di:waypoint x="671" y="180"/><di:waypoint x="733" y="180"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f5_di" bpmnElement="to_be_f5"><di:waypoint x="857" y="180"/><di:waypoint x="892" y="180"/><di:waypoint x="892" y="300"/><di:waypoint x="927" y="300"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f6_di" bpmnElement="to_be_f6"><di:waypoint x="963" y="300"/><di:waypoint x="998" y="300"/><di:waypoint x="998" y="420"/><di:waypoint x="1033" y="420"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f7_di" bpmnElement="to_be_f7"><di:waypoint x="1157" y="420"/><di:waypoint x="1192" y="420"/><di:waypoint x="1192" y="300"/><di:waypoint x="1227" y="300"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f8_di" bpmnElement="to_be_f8"><di:waypoint x="1263" y="300"/><di:waypoint x="1298" y="300"/><di:waypoint x="1298" y="420"/><di:waypoint x="1333" y="420"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f9_di" bpmnElement="to_be_f9"><di:waypoint x="1457" y="420"/><di:waypoint x="1492" y="420"/><di:waypoint x="1492" y="300"/><di:waypoint x="1527" y="300"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f10_di" bpmnElement="to_be_f10"><di:waypoint x="1563" y="300"/><di:waypoint x="1598" y="300"/><di:waypoint x="1598" y="420"/><di:waypoint x="1633" y="420"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f11_di" bpmnElement="to_be_f11"><di:waypoint x="1757" y="420"/><di:waypoint x="1792" y="420"/><di:waypoint x="1792" y="300"/><di:waypoint x="1827" y="300"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f12_di" bpmnElement="to_be_f12"><di:waypoint x="1863" y="300"/><di:waypoint x="1898" y="300"/><di:waypoint x="1898" y="540"/><di:waypoint x="1933" y="540"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f13_di" bpmnElement="to_be_f13"><di:waypoint x="2057" y="540"/><di:waypoint x="2127" y="540"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f14_di" bpmnElement="to_be_f14"><di:waypoint x="1863" y="300"/><di:waypoint x="1898" y="300"/><di:waypoint x="1898" y="420"/><di:waypoint x="1933" y="420"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="to_be_f15_di" bpmnElement="to_be_f15"><di:waypoint x="2057" y="420"/><di:waypoint x="2092" y="420"/><di:waypoint x="2092" y="60"/><di:waypoint x="2127" y="60"/></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

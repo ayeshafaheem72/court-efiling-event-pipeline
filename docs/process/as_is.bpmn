@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="as_is_defs" targetNamespace="https://github.com/ayeshafaheem72/court-efiling-event-pipeline">
+  <bpmn:collaboration id="as_is_collab">
+    <bpmn:participant id="as_is_pool" name="As-is: paper filing at the court counter" processRef="as_is_process"/>
+  </bpmn:collaboration>
+  <bpmn:process id="as_is_process" isExecutable="false">
+    <bpmn:laneSet id="as_is_lanes">
+      <bpmn:lane id="as_is_lane0" name="Filer (citizen or lawyer)">
+        <bpmn:flowNodeRef>as_is_s</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>as_is_t1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>as_is_t2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>as_is_t9</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>as_is_e</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="as_is_lane1" name="Filing counter clerk">
+        <bpmn:flowNodeRef>as_is_t3</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>as_is_g1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>as_is_t4</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>as_is_t6</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="as_is_lane2" name="Bank branch">
+        <bpmn:flowNodeRef>as_is_t5</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="as_is_lane3" name="Registrar">
+        <bpmn:flowNodeRef>as_is_t7</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>as_is_t8</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="as_is_s" name="Needs to file a case">
+      <bpmn:outgoing>as_is_f0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="as_is_t1" name="Prepare paper file">
+      <bpmn:incoming>as_is_f0</bpmn:incoming>
+      <bpmn:incoming>as_is_f4</bpmn:incoming>
+      <bpmn:outgoing>as_is_f1</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="as_is_t2" name="Queue at filing counter">
+      <bpmn:incoming>as_is_f1</bpmn:incoming>
+      <bpmn:outgoing>as_is_f2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="as_is_t3" name="Check documents by hand">
+      <bpmn:incoming>as_is_f2</bpmn:incoming>
+      <bpmn:outgoing>as_is_f3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="as_is_g1" name="Complete?">
+      <bpmn:incoming>as_is_f3</bpmn:incoming>
+      <bpmn:outgoing>as_is_f4</bpmn:outgoing>
+      <bpmn:outgoing>as_is_f5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="as_is_t4" name="Work out fee, issue challan">
+      <bpmn:incoming>as_is_f5</bpmn:incoming>
+      <bpmn:outgoing>as_is_f6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="as_is_t5" name="Pay fee in person">
+      <bpmn:incoming>as_is_f6</bpmn:incoming>
+      <bpmn:outgoing>as_is_f7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="as_is_t6" name="Register case in ledger">
+      <bpmn:incoming>as_is_f7</bpmn:incoming>
+      <bpmn:outgoing>as_is_f8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="as_is_t7" name="Read file, decide category">
+      <bpmn:incoming>as_is_f8</bpmn:incoming>
+      <bpmn:outgoing>as_is_f9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="as_is_t8" name="Move physical file to bench">
+      <bpmn:incoming>as_is_f9</bpmn:incoming>
+      <bpmn:outgoing>as_is_f10</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="as_is_t9" name="Visit court to check status">
+      <bpmn:incoming>as_is_f10</bpmn:incoming>
+      <bpmn:outgoing>as_is_f11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="as_is_e" name="Learns next step">
+      <bpmn:incoming>as_is_f11</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="as_is_f0" sourceRef="as_is_s" targetRef="as_is_t1"/>
+    <bpmn:sequenceFlow id="as_is_f1" sourceRef="as_is_t1" targetRef="as_is_t2"/>
+    <bpmn:sequenceFlow id="as_is_f2" sourceRef="as_is_t2" targetRef="as_is_t3"/>
+    <bpmn:sequenceFlow id="as_is_f3" sourceRef="as_is_t3" targetRef="as_is_g1"/>
+    <bpmn:sequenceFlow id="as_is_f4" name="No: come back another day" sourceRef="as_is_g1" targetRef="as_is_t1"/>
+    <bpmn:sequenceFlow id="as_is_f5" name="Yes" sourceRef="as_is_g1" targetRef="as_is_t4"/>
+    <bpmn:sequenceFlow id="as_is_f6" sourceRef="as_is_t4" targetRef="as_is_t5"/>
+    <bpmn:sequenceFlow id="as_is_f7" name="receipt" sourceRef="as_is_t5" targetRef="as_is_t6"/>
+    <bpmn:sequenceFlow id="as_is_f8" sourceRef="as_is_t6" targetRef="as_is_t7"/>
+    <bpmn:sequenceFlow id="as_is_f9" sourceRef="as_is_t7" targetRef="as_is_t8"/>
+    <bpmn:sequenceFlow id="as_is_f10" sourceRef="as_is_t8" targetRef="as_is_t9"/>
+    <bpmn:sequenceFlow id="as_is_f11" sourceRef="as_is_t9" targetRef="as_is_e"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="as_is_diagram">
+    <bpmndi:BPMNPlane id="as_is_plane" bpmnElement="as_is_collab">
+      <bpmndi:BPMNShape id="as_is_pool_di" bpmnElement="as_is_pool" isHorizontal="true"><dc:Bounds x="0" y="0" width="1940" height="480"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_lane0_di" bpmnElement="as_is_lane0" isHorizontal="true"><dc:Bounds x="30" y="0" width="1910" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_lane1_di" bpmnElement="as_is_lane1" isHorizontal="true"><dc:Bounds x="30" y="120" width="1910" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_lane2_di" bpmnElement="as_is_lane2" isHorizontal="true"><dc:Bounds x="30" y="240" width="1910" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_lane3_di" bpmnElement="as_is_lane3" isHorizontal="true"><dc:Bounds x="30" y="360" width="1910" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_s_di" bpmnElement="as_is_s"><dc:Bounds x="177" y="42" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_t1_di" bpmnElement="as_is_t1"><dc:Bounds x="283" y="28" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_t2_di" bpmnElement="as_is_t2"><dc:Bounds x="433" y="28" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_t3_di" bpmnElement="as_is_t3"><dc:Bounds x="583" y="148" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_g1_di" bpmnElement="as_is_g1" isMarkerVisible="true"><dc:Bounds x="769" y="154" width="52" height="52"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_t4_di" bpmnElement="as_is_t4"><dc:Bounds x="883" y="148" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_t5_di" bpmnElement="as_is_t5"><dc:Bounds x="1033" y="268" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_t6_di" bpmnElement="as_is_t6"><dc:Bounds x="1183" y="148" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_t7_di" bpmnElement="as_is_t7"><dc:Bounds x="1333" y="388" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_t8_di" bpmnElement="as_is_t8"><dc:Bounds x="1483" y="388" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_t9_di" bpmnElement="as_is_t9"><dc:Bounds x="1633" y="28" width="124" height="64"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="as_is_e_di" bpmnElement="as_is_e"><dc:Bounds x="1827" y="42" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="as_is_f0_di" bpmnElement="as_is_f0"><di:waypoint x="213" y="60"/><di:waypoint x="283" y="60"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="as_is_f1_di" bpmnElement="as_is_f1"><di:waypoint x="407" y="60"/><di:waypoint x="433" y="60"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="as_is_f2_di" bpmnElement="as_is_f2"><di:waypoint x="557" y="60"/><di:waypoint x="570" y="60"/><di:waypoint x="570" y="180"/><di:waypoint x="583" y="180"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="as_is_f3_di" bpmnElement="as_is_f3"><di:waypoint x="707" y="180"/><di:waypoint x="769" y="180"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="as_is_f4_di" bpmnElement="as_is_f4"><di:waypoint x="795" y="206"/><di:waypoint x="795" y="230"/><di:waypoint x="345" y="230"/><di:waypoint x="345" y="92"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="as_is_f5_di" bpmnElement="as_is_f5"><di:waypoint x="821" y="180"/><di:waypoint x="883" y="180"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="as_is_f6_di" bpmnElement="as_is_f6"><di:waypoint x="1007" y="180"/><di:waypoint x="1020" y="180"/><di:waypoint x="1020" y="300"/><di:waypoint x="1033" y="300"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="as_is_f7_di" bpmnElement="as_is_f7"><di:waypoint x="1157" y="300"/><di:waypoint x="1170" y="300"/><di:waypoint x="1170" y="180"/><di:waypoint x="1183" y="180"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="as_is_f8_di" bpmnElement="as_is_f8"><di:waypoint x="1307" y="180"/><di:waypoint x="1320" y="180"/><di:waypoint x="1320" y="420"/><di:waypoint x="1333" y="420"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="as_is_f9_di" bpmnElement="as_is_f9"><di:waypoint x="1457" y="420"/><di:waypoint x="1483" y="420"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="as_is_f10_di" bpmnElement="as_is_f10"><di:waypoint x="1607" y="420"/><di:waypoint x="1620" y="420"/><di:waypoint x="1620" y="60"/><di:waypoint x="1633" y="60"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="as_is_f11_di" bpmnElement="as_is_f11"><di:waypoint x="1757" y="60"/><di:waypoint x="1827" y="60"/></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

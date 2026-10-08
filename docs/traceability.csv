@@ -1,0 +1,15 @@
+requirement,user_story,process_step,code,test
+REQ-01,US-01,to_be: Save case return case number,app/main.py file_case,test_req01_filing_returns_case_number_immediately
+REQ-02,US-01,to_be: Validate fields and documents,app/models.py CaseFilingRequest,test_req02_incomplete_filing_rejected_with_field_errors
+REQ-03,US-02,to_be: Validate fields and documents,app/main.py file_case,test_req03_lawyer_needs_bar_licence
+REQ-04,US-01,to_be: Valid? (No branch),app/main.py error,test_req04_every_error_has_the_same_shape
+REQ-05,US-03,to_be: Submit filing online,app/store.py CaseStore.create,test_req05_resubmitting_with_same_key_does_not_duplicate
+REQ-06,US-04,to_be: case.filed to case.assigned,app/workers.py,test_req06_events_carry_case_through_every_step
+REQ-07,US-06,to_be: message queue lane,app/bus.py _retry_or_dead_letter,test_req07_failing_step_retries_then_goes_to_dead_letter
+REQ-07,US-06,to_be: Save case publish,scripts/republish.py,test_req07_queue_outage_keeps_case_and_republishes
+REQ-08,US-06,to_be: workers lane,app/workers.py status checks,test_req08_duplicate_event_is_processed_once
+REQ-09,US-06,n/a (data),app/store.py upgrade_case,test_req09_old_v1_documents_still_readable
+REQ-10,US-06,all status changes,app/store.py CaseStore.log,test_req10_every_status_change_is_audited
+REQ-11,US-04,to_be: Notify filer,app/workers.py notify,test_req11_filer_notified_once_per_milestone
+REQ-12,US-05,to_be: Triage and Work queue,app/workers.py classify,test_req12_triage_rules
+REQ-12,US-05,to_be: Work queue urgent cases first,app/store.py registrar_queue_counts,test_req12_registry_sees_queue_counts

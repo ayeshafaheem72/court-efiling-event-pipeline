@@ -1,0 +1,530 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Court E-Filing API",
+    "description": "Accepts civil case filings and hands follow-up work to event-driven workers.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/v1/cases": {
+      "post": {
+        "summary": "File Case",
+        "operationId": "file_case_v1_cases_post",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseFilingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilingReceipt"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Same Idempotency-Key sent again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilingReceipt"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/cases/{case_number}": {
+      "get": {
+        "summary": "Get Case",
+        "operationId": "get_case_v1_cases__case_number__get",
+        "parameters": [
+          {
+            "name": "case_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/registry/queues": {
+      "get": {
+        "summary": "Queue Counts",
+        "operationId": "queue_counts_v1_registry_queues_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CaseFilingRequest": {
+        "properties": {
+          "filer_type": {
+            "$ref": "#/components/schemas/FilerType"
+          },
+          "filer_email": {
+            "type": "string",
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Filer Email"
+          },
+          "bar_license_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bar License No",
+            "description": "Required when filer_type is lawyer (REQ-03)."
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 20,
+            "title": "Summary",
+            "description": "Short description of the dispute."
+          },
+          "claim_amount": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Claim Amount",
+            "description": "Amount claimed, in local currency. 0 if not monetary."
+          },
+          "parties": {
+            "items": {
+              "$ref": "#/components/schemas/Party"
+            },
+            "type": "array",
+            "minItems": 2,
+            "title": "Parties"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Documents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filer_type",
+          "filer_email",
+          "summary",
+          "claim_amount",
+          "parties",
+          "documents"
+        ],
+        "title": "CaseFilingRequest",
+        "description": "Body of POST /v1/cases (REQ-01, REQ-02)."
+      },
+      "CaseStatus": {
+        "type": "string",
+        "enum": [
+          "filed",
+          "triaged",
+          "fee_assessed",
+          "assigned",
+          "rejected"
+        ],
+        "title": "CaseStatus"
+      },
+      "CaseView": {
+        "properties": {
+          "case_number": {
+            "type": "string",
+            "title": "Case Number"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CaseStatus"
+          },
+          "filer_type": {
+            "$ref": "#/components/schemas/FilerType"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "claim_amount": {
+            "type": "number",
+            "title": "Claim Amount"
+          },
+          "parties": {
+            "items": {
+              "$ref": "#/components/schemas/Party"
+            },
+            "type": "array",
+            "title": "Parties"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "fee": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fee"
+          },
+          "registrar_queue": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registrar Queue"
+          },
+          "history": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "History",
+            "default": []
+          },
+          "schema_version": {
+            "type": "integer",
+            "title": "Schema Version",
+            "default": 2
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_number",
+          "status",
+          "filer_type",
+          "summary",
+          "claim_amount",
+          "parties"
+        ],
+        "title": "CaseView",
+        "description": "What GET /v1/cases/{case_number} returns."
+      },
+      "Document": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Title"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "plaint",
+              "evidence",
+              "power_of_attorney",
+              "id_copy",
+              "other"
+            ],
+            "title": "Kind"
+          },
+          "pages": {
+            "type": "integer",
+            "maximum": 2000.0,
+            "minimum": 1.0,
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "kind",
+          "pages"
+        ],
+        "title": "Document"
+      },
+      "ErrorBody": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "details": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Details",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorBody",
+        "description": "One error shape for every 4xx/5xx (REQ-04)."
+      },
+      "FilerType": {
+        "type": "string",
+        "enum": [
+          "citizen",
+          "lawyer"
+        ],
+        "title": "FilerType"
+      },
+      "FilingReceipt": {
+        "properties": {
+          "case_number": {
+            "type": "string",
+            "title": "Case Number"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CaseStatus"
+          },
+          "status_url": {
+            "type": "string",
+            "title": "Status Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_number",
+          "status",
+          "status_url"
+        ],
+        "title": "FilingReceipt"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Party": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "role": {
+            "$ref": "#/components/schemas/PartyRole"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{13}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id",
+            "description": "Optional. 13 digits when given."
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "role"
+        ],
+        "title": "Party"
+      },
+      "PartyRole": {
+        "type": "string",
+        "enum": [
+          "claimant",
+          "respondent"
+        ],
+        "title": "PartyRole"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
